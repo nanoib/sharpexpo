@@ -14,8 +14,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\SharpExpo.Family\data.json">
-      <Link>data.json</Link>
+    <None Include="..\SharpExpo.Family\family-options.json">
+      <Link>family-options.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\SharpExpo.Family\Families\*.json">
+      <Link>Families\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using SharpExpo.UI.Services;
 
 namespace SharpExpo.UI.Commands;
 
@@ -36,13 +37,44 @@ public class RelayCommand : ICommand
 
     public void Execute(object? parameter)
     {
-        if (_asyncExecute != null)
+        try
         {
-            _asyncExecute();
+            if (_asyncExecute != null)
+            {
+                // Запускаем async метод и обрабатываем исключения
+                var task = _asyncExecute();
+                if (task != null)
+                {
+                    task.ContinueWith(t =>
+                    {
+                        if (t.IsFaulted && t.Exception != null)
+                        {
+                            Logger.LogError("Ошибка в async команде", t.Exception);
+                            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                            {
+                                System.Windows.MessageBox.Show(
+                                    $"Ошибка выполнения команды: {t.Exception.GetBaseException().Message}\n\nДетали в логе: {Logger.LogFilePath}",
+                                    "Ошибка",
+                                    System.Windows.MessageBoxButton.OK,
+                                    System.Windows.MessageBoxImage.Error);
+                            });
+                        }
+                    }, TaskContinuationOptions.OnlyOnFaulted);
+                }
+            }
+            else
+            {
+                _execute?.Invoke();
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _execute?.Invoke();
+            Logger.LogError("Ошибка выполнения команды", ex);
+            System.Windows.MessageBox.Show(
+                $"Ошибка выполнения команды: {ex.Message}\n\nДетали в логе: {Logger.LogFilePath}",
+                "Ошибка",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
         }
     }
 }

@@ -31,3 +31,6 @@ C:\repos\sharpexpo\SharpExpo.UI\obj\Debug\net8.0-windows\refint\SharpExpo.UI.dll
 C:\repos\sharpexpo\SharpExpo.UI\obj\Debug\net8.0-windows\SharpExpo.UI.pdb
 C:\repos\sharpexpo\SharpExpo.UI\obj\Debug\net8.0-windows\SharpExpo.UI.genruntimeconfig.cache
 C:\repos\sharpexpo\SharpExpo.UI\obj\Debug\net8.0-windows\ref\SharpExpo.UI.dll
+C:\repos\sharpexpo\SharpExpo.UI\obj\Debug\net8.0-windows\SharpExpo.UI.sourcelink.json
+C:\repos\sharpexpo\SharpExpo.UI\bin\Debug\net8.0-windows\family-options.json
+C:\repos\sharpexpo\SharpExpo.UI\bin\Debug\net8.0-windows\Families\9e1f8475-2aff-4293-9999-d0596e958d85.json

@@ -14,3 +14,6 @@ C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.dll
 C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\refint\SharpExpo.Family.dll
 C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.pdb
 C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\ref\SharpExpo.Family.dll
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.sourcelink.json
+C:\repos\sharpexpo\SharpExpo.Family\bin\Debug\net8.0\Families\9e1f8475-2aff-4293-9999-d0596e958d85.json
+C:\repos\sharpexpo\SharpExpo.Family\bin\Debug\net8.0\family-options.json

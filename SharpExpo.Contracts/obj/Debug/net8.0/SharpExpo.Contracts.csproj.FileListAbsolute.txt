@@ -9,3 +9,4 @@ C:\repos\sharpexpo\SharpExpo.Contracts\obj\Debug\net8.0\SharpExpo.Contracts.dll
 C:\repos\sharpexpo\SharpExpo.Contracts\obj\Debug\net8.0\refint\SharpExpo.Contracts.dll
 C:\repos\sharpexpo\SharpExpo.Contracts\obj\Debug\net8.0\SharpExpo.Contracts.pdb
 C:\repos\sharpexpo\SharpExpo.Contracts\obj\Debug\net8.0\ref\SharpExpo.Contracts.dll
+C:\repos\sharpexpo\SharpExpo.Contracts\obj\Debug\net8.0\SharpExpo.Contracts.sourcelink.json

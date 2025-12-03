@@ -7,8 +7,9 @@
         xmlns:vm="clr-namespace:SharpExpo.UI.ViewModels"
         mc:Ignorable="d"
         Title="BIM Свойства" Height="600" Width="400"
-        WindowStartupLocation="Manual"
-        ResizeMode="CanResize">
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        Closing="MainWindow_Closing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -122,9 +123,14 @@
                                            Margin="0,0,5,0"
                                            Visibility="{Binding HasCategory, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                 <!-- Название -->
-                                <TextBlock Text="{Binding SectionName, FallbackValue={Binding PropertyName}}" 
+                                <TextBlock Text="{Binding SectionName}" 
                                            FontWeight="{Binding IsSectionHeader, Converter={StaticResource BoolToFontWeightConverter}}"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center"
+                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <TextBlock Text="{Binding PropertyName}" 
+                                           FontWeight="{Binding IsSectionHeader, Converter={StaticResource BoolToFontWeightConverter}}"
+                                           VerticalAlignment="Center"
+                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
