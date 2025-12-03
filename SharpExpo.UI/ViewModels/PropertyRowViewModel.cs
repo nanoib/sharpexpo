@@ -44,5 +44,15 @@ public class PropertyRowViewModel : ViewModelBase
     /// Указывает, развернута ли секция
     /// </summary>
     public bool IsExpanded { get; set; }
+
+    /// <summary>
+    /// Описание свойства (для тултипа)
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Команда для переключения состояния развернутости секции
+    /// </summary>
+    public ICommand? ToggleExpandCommand { get; set; }
 }
 

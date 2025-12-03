@@ -108,12 +108,14 @@ public class MainWindowViewModel : ViewModelBase
                 }
 
                 // Добавляем заголовок категории
-                allProperties.Add(new PropertyRowViewModel
+                var categoryHeader = new PropertyRowViewModel
                 {
                     IsSectionHeader = true,
                     SectionName = categoryName,
-                    IsExpanded = true
-                });
+                    IsExpanded = true,
+                    ToggleExpandCommand = new RelayCommand(() => ToggleCategory(categoryName))
+                };
+                allProperties.Add(categoryHeader);
 
                 Logger.Log($"Добавлена категория: {categoryName}, свойств: {optionProperties.Count}");
 
@@ -126,6 +128,7 @@ public class MainWindowViewModel : ViewModelBase
                         IsSectionHeader = false,
                         PropertyName = optionProperty.PropertyName,
                         PropertyValue = displayValue,
+                        Description = optionProperty.Description,
                         IsLocked = true, // Пока все свойства только для чтения
                         HasCategory = !string.IsNullOrEmpty(optionProperty.CategoryName),
                         HasDropdown = optionProperty.ValueType == OptionValueType.Enumeration
@@ -145,12 +148,14 @@ public class MainWindowViewModel : ViewModelBase
                     }
 
                     // Добавляем заголовок категории
-                    allProperties.Add(new PropertyRowViewModel
+                    var categoryHeader2 = new PropertyRowViewModel
                     {
                         IsSectionHeader = true,
                         SectionName = categoryPair.Key,
-                        IsExpanded = true
-                    });
+                        IsExpanded = true,
+                        ToggleExpandCommand = new RelayCommand(() => ToggleCategory(categoryPair.Key))
+                    };
+                    allProperties.Add(categoryHeader2);
 
                     // Добавляем свойства категории
                     foreach (var optionProperty in optionProperties)
@@ -161,6 +166,7 @@ public class MainWindowViewModel : ViewModelBase
                             IsSectionHeader = false,
                             PropertyName = optionProperty.PropertyName,
                             PropertyValue = displayValue,
+                            Description = optionProperty.Description,
                             IsLocked = true,
                             HasCategory = !string.IsNullOrEmpty(optionProperty.CategoryName),
                             HasDropdown = optionProperty.ValueType == OptionValueType.Enumeration
@@ -192,11 +198,23 @@ public class MainWindowViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(SearchText))
         {
-            // Если поиск пуст, показываем все свойства
+            // Если поиск пуст, показываем все свойства с учетом развернутости категорий
             Properties.Clear();
             foreach (var prop in _allProperties)
             {
-                Properties.Add(prop);
+                if (prop.IsSectionHeader)
+                {
+                    Properties.Add(prop);
+                }
+                else
+                {
+                    // Находим родительскую категорию
+                    var categoryHeader = FindCategoryHeader(prop);
+                    if (categoryHeader != null && categoryHeader.IsExpanded)
+                    {
+                        Properties.Add(prop);
+                    }
+                }
             }
             return;
         }
@@ -210,17 +228,67 @@ public class MainWindowViewModel : ViewModelBase
             if (prop.IsSectionHeader)
             {
                 matches = prop.SectionName?.ToLowerInvariant().Contains(searchLower) ?? false;
+                if (matches)
+                {
+                    Properties.Add(prop);
+                }
             }
             else
             {
                 matches = (prop.PropertyName?.ToLowerInvariant().Contains(searchLower) ?? false) ||
                          (prop.PropertyValue?.ToLowerInvariant().Contains(searchLower) ?? false);
+                
+                if (matches)
+                {
+                    // При поиске показываем все совпадения, независимо от развернутости
+                    Properties.Add(prop);
+                }
+            }
+        }
+    }
+
+    private PropertyRowViewModel? FindCategoryHeader(PropertyRowViewModel property)
+    {
+        var propertyIndex = _allProperties.IndexOf(property);
+        if (propertyIndex < 0) return null;
+        
+        // Ищем назад до заголовка категории
+        for (int i = propertyIndex - 1; i >= 0; i--)
+        {
+            if (_allProperties[i].IsSectionHeader)
+            {
+                return _allProperties[i];
+            }
+        }
+        
+        return null;
+    }
+
+    private void ToggleCategory(string categoryName)
+    {
+        // Находим заголовок категории и переключаем его состояние
+        var categoryHeader = _allProperties.FirstOrDefault(p => p.IsSectionHeader && p.SectionName == categoryName);
+        if (categoryHeader != null)
+        {
+            categoryHeader.IsExpanded = !categoryHeader.IsExpanded;
+            
+            // Обновляем видимость свойств этой категории
+            var categoryIndex = _allProperties.IndexOf(categoryHeader);
+            var propertiesToToggle = new List<PropertyRowViewModel>();
+            
+            // Собираем все свойства этой категории (до следующего заголовка или конца списка)
+            for (int i = categoryIndex + 1; i < _allProperties.Count; i++)
+            {
+                var prop = _allProperties[i];
+                if (prop.IsSectionHeader)
+                {
+                    break; // Дошли до следующей категории
+                }
+                propertiesToToggle.Add(prop);
             }
             
-            if (matches)
-            {
-                Properties.Add(prop);
-            }
+            // Обновляем коллекцию Properties
+            FilterProperties();
         }
     }
 }

@@ -166,4 +166,17 @@ public partial class MainWindow : Window
     {
         Logger.Log("Окно закрывается");
     }
+
+    private void TriangleIcon_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is System.Windows.Controls.TextBlock textBlock && 
+            textBlock.DataContext is PropertyRowViewModel viewModel &&
+            viewModel.IsSectionHeader &&
+            viewModel.ToggleExpandCommand != null &&
+            viewModel.ToggleExpandCommand.CanExecute(null))
+        {
+            viewModel.ToggleExpandCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
 }

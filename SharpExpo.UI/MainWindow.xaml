@@ -63,25 +63,33 @@
 
         <!-- DataGrid с свойствами -->
         <DataGrid Grid.Row="1"
+                  x:Name="PropertiesDataGrid"
                   ItemsSource="{Binding Properties}"
                   AutoGenerateColumns="False"
                   HeadersVisibility="None"
-                  GridLinesVisibility="None"
-                  Background="#F5F5F5"
+                  GridLinesVisibility="All"
+                  Background="White"
                   BorderThickness="0"
                   SelectionMode="Single"
-                  SelectionUnit="FullRow"
-                  IsReadOnly="True">
+                  SelectionUnit="Cell"
+                  IsReadOnly="True"
+                  RowHeaderWidth="0"
+                  VerticalGridLinesBrush="#E0E0E0"
+                  HorizontalGridLinesBrush="#E0E0E0"
+                  SelectionChanged="PropertiesDataGrid_SelectionChanged">
             <DataGrid.Style>
                 <Style TargetType="DataGrid">
                     <Setter Property="RowStyle">
                         <Setter.Value>
                             <Style TargetType="DataGridRow">
-                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Background" Value="White"/>
                                 <Setter Property="MinHeight" Value="25"/>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#E8E8E8"/>
+                                        <Setter Property="Background" Value="#F5F5F5"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="White"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -92,6 +100,13 @@
                             <Style TargetType="DataGridCell">
                                 <Setter Property="BorderThickness" Value="0"/>
                                 <Setter Property="Padding" Value="5,3"/>
+                                <Setter Property="Background" Value="White"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#E3F2FD"/>
+                                        <Setter Property="Foreground" Value="Black"/>
+                                    </Trigger>
+                                </Style.Triggers>
                             </Style>
                         </Setter.Value>
                     </Setter>
@@ -103,12 +118,21 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="5,0">
-                                <!-- Иконка секции/свойства -->
-                                <TextBlock Text="{Binding IsSectionHeader, Converter={StaticResource BoolToTriangleConverter}}" 
+                                <!-- Иконка секции/свойства (кликабельная для категорий) -->
+                                <TextBlock x:Name="TriangleIcon"
+                                           Text="{Binding IsExpanded, Converter={StaticResource ExpandedToTriangleConverter}}" 
                                            FontSize="10"
                                            VerticalAlignment="Center"
                                            Margin="0,0,5,0"
-                                           Foreground="Black"/>
+                                           Foreground="Black"
+                                           Cursor="Hand"
+                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource BoolToVisibilityConverter}}"
+                                           MouseDown="TriangleIcon_MouseDown"/>
+                                <TextBlock Text=""
+                                           FontSize="10"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,5,0"
+                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                                 <!-- Иконка замка -->
                                 <TextBlock Text="🔒" 
                                            FontSize="12"
@@ -126,11 +150,29 @@
                                 <TextBlock Text="{Binding SectionName}" 
                                            FontWeight="{Binding IsSectionHeader, Converter={StaticResource BoolToFontWeightConverter}}"
                                            VerticalAlignment="Center"
-                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock.ToolTip>
+                                        <ToolTip>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding SectionName}" FontWeight="Bold" Margin="0,0,0,4"/>
+                                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="300"/>
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
                                 <TextBlock Text="{Binding PropertyName}" 
-                                           FontWeight="{Binding IsSectionHeader, Converter={StaticResource BoolToFontWeightConverter}}"
+                                           FontWeight="Normal"
                                            VerticalAlignment="Center"
-                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                    <TextBlock.ToolTip>
+                                        <ToolTip>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding PropertyName}" FontWeight="Bold" Margin="0,0,0,4"/>
+                                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="300"/>
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -138,6 +180,17 @@
                 
                 <!-- Колонка со значением -->
                 <DataGridTemplateColumn Width="*">
+                    <DataGridTemplateColumn.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="Background" Value="White"/>
+                            <Setter Property="IsEnabled" Value="False"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTemplateColumn.CellStyle>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="5,0">

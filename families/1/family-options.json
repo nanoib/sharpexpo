@@ -1,0 +1,59 @@
+{
+  "FamilyOptions": [
+    {
+      "Id": "option-basic-info",
+      "OptionProperties": [
+        {
+          "Id": "opt-val-name",
+          "PropertyName": "Наименование",
+          "Description": "Основное наименование компонента",
+          "ValueType": "String",
+          "CategoryName": "Наименование",
+          "Value": "1"
+        },
+        {
+          "Id": "opt-val-id",
+          "PropertyName": "ID компонента",
+          "Description": "Уникальный идентификатор компонента",
+          "ValueType": "String",
+          "CategoryName": "Наименование",
+          "Value": "9e1f8475-2aff-4293-9999-d0596e958d85"
+        }
+      ]
+    },
+    {
+      "Id": "option-categorization",
+      "OptionProperties": [
+        {
+          "Id": "opt-val-type",
+          "PropertyName": "Тип компонента",
+          "Description": "Тип компонента в системе",
+          "ValueType": "Enumeration",
+          "CategoryName": "Категоризация",
+          "Value": "Проектный"
+        },
+        {
+          "Id": "opt-val-catalog",
+          "PropertyName": "Каталог",
+          "Description": "Каталог компонента",
+          "ValueType": "String",
+          "CategoryName": "Категоризация",
+          "Value": null
+        }
+      ]
+    },
+    {
+      "Id": "option-coordinates",
+      "OptionProperties": [
+        {
+          "Id": "opt-val-coords",
+          "PropertyName": "Координаты и ориентация",
+          "Description": "Координаты и ориентация компонента в модели",
+          "ValueType": "String",
+          "CategoryName": "Система координат модели",
+          "Value": "Координаты (X: 0 мм, Y: 0 мм, Z: 0 мм), Г"
+        }
+      ]
+    }
+  ]
+}
