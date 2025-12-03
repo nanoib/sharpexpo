@@ -14,19 +14,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- JSON Schema файлы (не копируются в выходную директорию) -->
   <ItemGroup>
-    <None Update="data.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="family-options.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Families\*.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Update="*.schema.json" />
   </ItemGroup>
 
 </Project>

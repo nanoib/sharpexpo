@@ -1,5 +1,5 @@
 ﻿using System.IO;
-using System.Reflection;
+using System.Linq;
 using System.Windows;
 using SharpExpo.Family;
 using SharpExpo.UI.Services;
@@ -20,66 +20,36 @@ public partial class MainWindow : Window
             InitializeComponent();
             Logger.Log("InitializeComponent выполнен");
             
-            // Получаем пути к директориям и файлам
-            var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-            var assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
-            Logger.Log($"Директория сборки: {assemblyDirectory}");
+            // Получаем аргументы командной строки
+            var args = Environment.GetCommandLineArgs();
+            Logger.Log($"Аргументы командной строки: {string.Join(" ", args)}");
             
-            // Путь к директории с семействами
-            var familiesDirectory = Path.Combine(assemblyDirectory ?? string.Empty, "Families");
+            // Парсим путь к файлу family-options.json
+            var familyOptionsFilePath = CommandLineArguments.ParseFamilyOptionsPath(args);
             
-            // Если директория не найдена, ищем в директории Family проекта
-            if (!Directory.Exists(familiesDirectory))
+            if (string.IsNullOrEmpty(familyOptionsFilePath) || !File.Exists(familyOptionsFilePath))
             {
-                var solutionDirectory = Directory.GetParent(assemblyDirectory ?? string.Empty)?.Parent?.FullName;
-                Logger.Log($"Директория решения: {solutionDirectory}");
-                
-                if (!string.IsNullOrEmpty(solutionDirectory))
-                {
-                    var familyProjectFamiliesPath = Path.Combine(solutionDirectory, "SharpExpo.Family", "Families");
-                    Logger.Log($"Проверка директории Families в Family проекте: {familyProjectFamiliesPath}, существует: {Directory.Exists(familyProjectFamiliesPath)}");
-                    
-                    if (Directory.Exists(familyProjectFamiliesPath))
-                    {
-                        familiesDirectory = familyProjectFamiliesPath;
-                    }
-                }
-            }
-            
-            // Путь к файлу с опциями семейств
-            var familyOptionsFilePath = Path.Combine(assemblyDirectory ?? string.Empty, "family-options.json");
-            
-            if (!File.Exists(familyOptionsFilePath))
-            {
-                var solutionDirectory = Directory.GetParent(assemblyDirectory ?? string.Empty)?.Parent?.FullName;
-                if (!string.IsNullOrEmpty(solutionDirectory))
-                {
-                    var familyProjectOptionsPath = Path.Combine(solutionDirectory, "SharpExpo.Family", "family-options.json");
-                    Logger.Log($"Проверка файла family-options.json в Family проекте: {familyProjectOptionsPath}, существует: {File.Exists(familyProjectOptionsPath)}");
-                    
-                    if (File.Exists(familyProjectOptionsPath))
-                    {
-                        familyOptionsFilePath = familyProjectOptionsPath;
-                    }
-                }
-            }
-            
-            if (!Directory.Exists(familiesDirectory))
-            {
-                Logger.LogError($"Директория Families не найдена! Искали по пути: {familiesDirectory}");
+                Logger.LogError($"Файл family-options.json не найден!", null);
                 MessageBox.Show(
-                    $"Директория Families не найдена!\n\nИскали по пути:\n{familiesDirectory}\n\nПроверьте, что директория Families существует.",
+                    $"Файл family-options.json не найден!\n\n" +
+                    $"Использование:\n" +
+                    $"  SharpExpo.UI.exe --family-path \"C:\\path\\to\\family-options.json\"\n\n" +
+                    $"Или поместите данные в: C:\\repos\\sharpexpo\\families\\<directory>\\family-options.json",
                     "Ошибка",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 return;
             }
             
-            if (!File.Exists(familyOptionsFilePath))
+            // Получаем директорию Families на основе пути к файлу family-options.json
+            var familiesDirectory = CommandLineArguments.GetFamiliesDirectory(familyOptionsFilePath);
+            
+            if (!Directory.Exists(familiesDirectory))
             {
-                Logger.LogError($"Файл family-options.json не найден! Искали по пути: {familyOptionsFilePath}");
+                Logger.LogError($"Директория Families не найдена! Искали по пути: {familiesDirectory}");
                 MessageBox.Show(
-                    $"Файл family-options.json не найден!\n\nИскали по пути:\n{familyOptionsFilePath}\n\nПроверьте, что файл существует.",
+                    $"Директория Families не найдена!\n\nИскали по пути:\n{familiesDirectory}\n\n" +
+                    $"Убедитесь, что рядом с файлом family-options.json находится директория Families с JSON файлами семейств.",
                     "Ошибка",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -89,40 +59,88 @@ public partial class MainWindow : Window
             Logger.Log($"Используется директория Families: {familiesDirectory}");
             Logger.Log($"Используется файл family-options.json: {familyOptionsFilePath}");
             
-            // ID семейства для отображения (можно сделать настраиваемым)
-            var defaultFamilyId = "9e1f8475-2aff-4293-9999-d0596e958d85";
+            // Получаем ID первого семейства из директории Families
+            var familyFiles = Directory.GetFiles(familiesDirectory, "*.json")
+                .OrderBy(f => f)
+                .ToList();
             
-            // Создаем провайдер данных и ViewModel
-            var dataProvider = new JsonBimFamilyDataProvider(familiesDirectory, familyOptionsFilePath);
-            var viewModel = new MainWindowViewModel(dataProvider, defaultFamilyId);
-            
-            DataContext = viewModel;
-            Logger.Log("DataContext установлен");
-            
-            // Загружаем данные при старте
-            Loaded += (s, e) =>
+            if (familyFiles.Count == 0)
             {
-                try
+                Logger.LogError($"В директории Families не найдено JSON файлов семейств: {familiesDirectory}", null);
+                MessageBox.Show(
+                    $"В директории Families не найдено JSON файлов семейств!\n\nПуть: {familiesDirectory}",
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            
+            // Загружаем первое семейство для получения его ID
+            var firstFamilyFile = familyFiles[0];
+            Logger.Log($"Загружаем семейство из файла: {firstFamilyFile}");
+            
+            try
+            {
+                var familyJson = File.ReadAllText(firstFamilyFile);
+                var familyDto = System.Text.Json.JsonSerializer.Deserialize<SharpExpo.Contracts.DTOs.BimFamilyDto>(
+                    familyJson,
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                
+                if (familyDto == null || string.IsNullOrEmpty(familyDto.Id))
                 {
-                    Logger.Log("Окно загружено, начинаем загрузку данных...");
-                    if (viewModel.LoadCommand.CanExecute(null))
-                    {
-                        viewModel.LoadCommand.Execute(null);
-                        Logger.Log("Команда загрузки данных выполнена");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Ошибка при загрузке данных в Loaded event", ex);
+                    Logger.LogError($"Не удалось загрузить ID семейства из файла: {firstFamilyFile}", null);
                     MessageBox.Show(
-                        $"Ошибка при загрузке данных: {ex.Message}\n\nДетали в логе: {Logger.LogFilePath}",
+                        $"Не удалось загрузить ID семейства из файла!\n\nПуть: {firstFamilyFile}",
                         "Ошибка",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
+                    return;
                 }
-            };
-            
-            Logger.Log("MainWindow инициализирован успешно");
+                
+                var familyId = familyDto.Id;
+                Logger.Log($"ID семейства для отображения: {familyId}");
+                
+                // Создаем провайдер данных и ViewModel
+                var dataProvider = new JsonBimFamilyDataProvider(familiesDirectory, familyOptionsFilePath);
+                var viewModel = new MainWindowViewModel(dataProvider, familyId);
+                
+                DataContext = viewModel;
+                Logger.Log("DataContext установлен");
+                
+                // Загружаем данные при старте
+                Loaded += (s, e) =>
+                {
+                    try
+                    {
+                        Logger.Log("Окно загружено, начинаем загрузку данных...");
+                        if (viewModel.LoadCommand.CanExecute(null))
+                        {
+                            viewModel.LoadCommand.Execute(null);
+                            Logger.Log("Команда загрузки данных выполнена");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Ошибка при загрузке данных в Loaded event", ex);
+                        MessageBox.Show(
+                            $"Ошибка при загрузке данных: {ex.Message}\n\nДетали в логе: {Logger.LogFilePath}",
+                            "Ошибка",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                    }
+                };
+                
+                Logger.Log("MainWindow инициализирован успешно");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Ошибка при загрузке семейства из файла: {firstFamilyFile}", ex);
+                MessageBox.Show(
+                    $"Ошибка при загрузке семейства: {ex.Message}\n\nДетали в логе: {Logger.LogFilePath}",
+                    "Ошибка",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
         catch (Exception ex)
         {

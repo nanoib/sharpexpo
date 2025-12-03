@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BIM Family Schema",
+  "description": "JSON Schema для файлов семейств в директории Families",
+  "type": "object",
+  "required": ["Id", "Name", "FamilyOptionIds", "CategoryOrder"],
+  "properties": {
+    "Id": {
+      "type": "string",
+      "description": "Уникальный идентификатор BIM-семейства"
+    },
+    "Name": {
+      "type": "string",
+      "description": "Имя BIM-семейства"
+    },
+    "FamilyOptionIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Список идентификаторов опций семейства"
+    },
+    "CategoryOrder": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Порядок категорий для отображения в панели BIM-свойств"
+    }
+  }
+}
+

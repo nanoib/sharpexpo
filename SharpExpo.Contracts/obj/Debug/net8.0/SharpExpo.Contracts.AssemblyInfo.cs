@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SharpExpo.Contracts")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a7cb381ea18c5621cbf925f07b5e5104e1061e15")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dd44259185d8af3cbf6ee953d3b6ca65494d0815")]
 [assembly: System.Reflection.AssemblyProductAttribute("SharpExpo.Contracts")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SharpExpo.Contracts")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

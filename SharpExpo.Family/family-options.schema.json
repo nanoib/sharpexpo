@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Family Options Schema",
+  "description": "JSON Schema для файла family-options.json",
+  "type": "object",
+  "required": ["FamilyOptions"],
+  "properties": {
+    "FamilyOptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["Id", "OptionProperties"],
+        "properties": {
+          "Id": {
+            "type": "string",
+            "description": "Уникальный идентификатор опции семейства"
+          },
+          "OptionProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["Id", "PropertyName", "ValueType", "CategoryName"],
+              "properties": {
+                "Id": {
+                  "type": "string",
+                  "description": "Уникальный идентификатор свойства опции"
+                },
+                "PropertyName": {
+                  "type": "string",
+                  "description": "Имя свойства, отображаемое в первом столбце панели BIM-свойств"
+                },
+                "Description": {
+                  "type": "string",
+                  "description": "Пояснение к свойству"
+                },
+                "ValueType": {
+                  "type": "string",
+                  "enum": ["String", "Double", "Enumeration"],
+                  "description": "Тип свойства: String, Double или Enumeration"
+                },
+                "CategoryName": {
+                  "type": "string",
+                  "description": "Имя категории, к которой относится это свойство"
+                },
+                "Value": {
+                  "description": "Значение свойства (может быть строкой, числом или значением перечисления)"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

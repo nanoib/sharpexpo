@@ -1,20 +1,20 @@
 ﻿SharpExpo.UI
-
+1.0.0.0
 
 winexe
 C#
 .cs
-C:\repos\sharpexpo\SharpExpo.UI\obj\Debug\net8.0-windows\
+c:\repos\sharpexpo\SharpExpo.UI\obj\Debug\net8.0-windows\
 SharpExpo.UI
 none
 false
-TRACE;DEBUG;NET;NET8_0;NETCOREAPP
-C:\repos\sharpexpo\SharpExpo.UI\App.xaml
+TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
+c:\repos\sharpexpo\SharpExpo.UI\App.xaml
 11407045341
 
-14906441119
-201-2129323166
+17-1091596238
+201-1989377393
 MainWindow.xaml;
 
-False
+True
 

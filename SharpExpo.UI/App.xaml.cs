@@ -21,6 +21,7 @@ public partial class App : Application
         
         Logger.Log("Приложение запущено");
         Logger.Log($"Лог файл: {Logger.LogFilePath}");
+        Logger.Log($"Аргументы командной строки: {string.Join(" ", e.Args)}");
         Console.WriteLine($"Лог файл: {Logger.LogFilePath}");
     }
 

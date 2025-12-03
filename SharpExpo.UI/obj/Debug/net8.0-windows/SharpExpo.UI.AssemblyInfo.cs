@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SharpExpo.UI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6f1c88e023d6b0a1e71155d37b8d12d922479cd2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dd44259185d8af3cbf6ee953d3b6ca65494d0815")]
 [assembly: System.Reflection.AssemblyProductAttribute("SharpExpo.UI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SharpExpo.UI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
