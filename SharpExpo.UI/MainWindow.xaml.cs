@@ -102,7 +102,7 @@ public partial class MainWindow : Window
                 
                 // Создаем провайдер данных и ViewModel
                 var dataProvider = new JsonBimFamilyDataProvider(familiesDirectory, familyOptionsFilePath);
-                var viewModel = new MainWindowViewModel(dataProvider, familyId);
+                var viewModel = new MainWindowViewModel(dataProvider, familyId, familyOptionsFilePath, familiesDirectory);
                 
                 DataContext = viewModel;
                 Logger.Log("DataContext установлен");
@@ -177,6 +177,114 @@ public partial class MainWindow : Window
         {
             viewModel.ToggleExpandCommand.Execute(null);
             e.Handled = true;
+        }
+    }
+
+    private void PropertiesDataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.DataGrid dataGrid && dataGrid.SelectedCells.Count > 0)
+        {
+            var selectedCell = dataGrid.SelectedCells[0];
+            // Если выделена ячейка во втором столбце, переключаем выделение на первый столбец
+            if (selectedCell.Column != null && selectedCell.Column.DisplayIndex == 1)
+            {
+                var row = selectedCell.Item;
+                if (row != null)
+                {
+                    dataGrid.SelectedCells.Clear();
+                    dataGrid.CurrentCell = new System.Windows.Controls.DataGridCellInfo(row, dataGrid.Columns[0]);
+                    dataGrid.SelectedCells.Add(new System.Windows.Controls.DataGridCellInfo(row, dataGrid.Columns[0]));
+                }
+            }
+        }
+    }
+
+    private bool _isSaving = false; // Флаг для предотвращения двойного сохранения
+    
+    private async void PropertyValueTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter && sender is System.Windows.Controls.TextBox textBox)
+        {
+            e.Handled = true;
+            
+            // Предотвращаем двойное сохранение
+            if (_isSaving)
+            {
+                Logger.Log("Сохранение уже выполняется, пропускаем...");
+                return;
+            }
+            
+            _isSaving = true;
+            try
+            {
+                // Обновляем привязку вручную перед сохранением
+                var bindingExpression = textBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty);
+                bindingExpression?.UpdateSource();
+                
+                // Сохраняем значение
+                await SavePropertyValue(textBox);
+                
+                // Перемещаем фокус после сохранения
+                textBox.MoveFocus(new System.Windows.Input.TraversalRequest(System.Windows.Input.FocusNavigationDirection.Next));
+            }
+            finally
+            {
+                _isSaving = false;
+            }
+        }
+    }
+
+    private async void PropertyValueTextBox_LostFocus(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.TextBox textBox)
+        {
+            // Предотвращаем двойное сохранение (если уже сохраняем через KeyDown)
+            if (_isSaving)
+            {
+                Logger.Log("Сохранение уже выполняется через KeyDown, пропускаем LostFocus...");
+                return;
+            }
+            
+            _isSaving = true;
+            try
+            {
+                // Обновляем привязку вручную перед сохранением
+                var bindingExpression = textBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty);
+                bindingExpression?.UpdateSource();
+                
+                await SavePropertyValue(textBox);
+            }
+            finally
+            {
+                _isSaving = false;
+            }
+        }
+    }
+
+    private async Task SavePropertyValue(System.Windows.Controls.TextBox textBox)
+    {
+        if (textBox.DataContext is PropertyRowViewModel propertyRow && 
+            DataContext is MainWindowViewModel viewModel)
+        {
+            // Используем значение из TextBox напрямую, так как привязка может еще не обновиться
+            var newValue = textBox.Text;
+            var oldValue = propertyRow.PropertyValue;
+            
+            Logger.Log($"SavePropertyValue вызван: OldValue='{oldValue}', NewValue='{newValue}'");
+            Logger.Log($"TextBox.Text='{textBox.Text}', PropertyRow.PropertyValue='{propertyRow.PropertyValue}'");
+            
+            // ВСЕГДА сохраняем значение из TextBox, даже если PropertyValue уже обновлен
+            // Это гарантирует, что файл будет обновлен с актуальным значением из UI
+            Logger.Log($"Сохраняем значение из TextBox: '{newValue}'");
+            await viewModel.SavePropertyValueAsync(propertyRow, newValue);
+            
+            // После сохранения обновляем привязку, чтобы UI синхронизировался
+            var bindingExpression = textBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty);
+            bindingExpression?.UpdateTarget();
+        }
+        else
+        {
+            Logger.LogError("SavePropertyValue: не удалось получить propertyRow или viewModel", null);
         }
     }
 }

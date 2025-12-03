@@ -27,14 +27,15 @@ public static class CommandLineArguments
                 var path = args[i + 1];
                 Logger.Log($"Найден параметр --family-path: {path}");
                 
-                if (File.Exists(path))
+                var normalizedPath = Path.GetFullPath(path);
+                if (File.Exists(normalizedPath))
                 {
-                    Logger.Log($"Файл найден: {path}");
-                    return path;
+                    Logger.Log($"Файл найден (абсолютный путь): {normalizedPath}");
+                    return normalizedPath;
                 }
                 else
                 {
-                    Logger.LogError($"Файл не найден по указанному пути: {path}", null);
+                    Logger.LogError($"Файл не найден по указанному пути: {normalizedPath}", null);
                     return null;
                 }
             }
@@ -65,11 +66,12 @@ public static class CommandLineArguments
         Logger.Log($"Первая директория по алфавиту: {firstDirectory}");
 
         var familyOptionsPath = Path.Combine(firstDirectory, FamilyOptionsFileName);
+        var absolutePath = Path.GetFullPath(familyOptionsPath);
         
-        if (File.Exists(familyOptionsPath))
+        if (File.Exists(absolutePath))
         {
-            Logger.Log($"Файл найден: {familyOptionsPath}");
-            return familyOptionsPath;
+            Logger.Log($"Файл найден (абсолютный путь): {absolutePath}");
+            return absolutePath;
         }
         else
         {

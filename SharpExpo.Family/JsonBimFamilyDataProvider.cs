@@ -16,8 +16,12 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
 
     public JsonBimFamilyDataProvider(string familiesDirectory, string familyOptionsFilePath)
     {
-        _familiesDirectory = familiesDirectory ?? throw new ArgumentNullException(nameof(familiesDirectory));
-        _familyOptionsFilePath = familyOptionsFilePath ?? throw new ArgumentNullException(nameof(familyOptionsFilePath));
+        _familiesDirectory = Path.GetFullPath(familiesDirectory ?? throw new ArgumentNullException(nameof(familiesDirectory)));
+        _familyOptionsFilePath = Path.GetFullPath(familyOptionsFilePath ?? throw new ArgumentNullException(nameof(familyOptionsFilePath)));
+        
+        System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider] Инициализация:");
+        System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider]   FamiliesDirectory: {_familiesDirectory}");
+        System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider]   FamilyOptionsFilePath: {_familyOptionsFilePath}");
     }
 
     public async Task<BimFamilyData?> LoadFamilyDataAsync(string familyId)
@@ -204,15 +208,31 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
         return families;
     }
 
+    /// <summary>
+    /// Очищает кэш опций семейства
+    /// </summary>
+    public void ClearCache()
+    {
+        _cachedFamilyOptions = null;
+    }
+
     private async Task LoadFamilyOptionsCacheAsync()
     {
-        if (!File.Exists(_familyOptionsFilePath))
+        var absolutePath = Path.GetFullPath(_familyOptionsFilePath);
+        System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider] Загрузка кэша из: {absolutePath}");
+        
+        if (!File.Exists(absolutePath))
         {
+            System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider] Файл не найден: {absolutePath}");
             _cachedFamilyOptions = new Dictionary<string, FamilyOption>();
             return;
         }
 
-        var jsonContent = await File.ReadAllTextAsync(_familyOptionsFilePath);
+        var fileInfo = new FileInfo(absolutePath);
+        fileInfo.Refresh();
+        System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider] Файл найден, размер: {fileInfo.Length} байт, последнее изменение: {fileInfo.LastWriteTime}");
+
+        var jsonContent = await File.ReadAllTextAsync(absolutePath);
         var optionsDto = JsonSerializer.Deserialize<FamilyOptionsCollectionDto>(jsonContent, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -324,7 +344,46 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
             case OptionValueType.Double:
                 if (dto.Value != null)
                 {
-                    if (double.TryParse(dto.Value.ToString(), out var doubleVal))
+                    // Пробуем разные способы парсинга
+                    double doubleVal = 0;
+                    bool parsed = false;
+                    
+                    // Сначала пробуем как число напрямую
+                    if (dto.Value is double d)
+                    {
+                        doubleVal = d;
+                        parsed = true;
+                    }
+                    else if (dto.Value is int i)
+                    {
+                        doubleVal = i;
+                        parsed = true;
+                    }
+                    else if (dto.Value is long l)
+                    {
+                        doubleVal = l;
+                        parsed = true;
+                    }
+                    else if (dto.Value is decimal dec)
+                    {
+                        doubleVal = (double)dec;
+                        parsed = true;
+                    }
+                    else
+                    {
+                        // Пробуем парсить строку с учетом разных культур
+                        var strValue = dto.Value.ToString();
+                        if (double.TryParse(strValue, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out doubleVal))
+                        {
+                            parsed = true;
+                        }
+                        else if (double.TryParse(strValue, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out doubleVal))
+                        {
+                            parsed = true;
+                        }
+                    }
+                    
+                    if (parsed)
                     {
                         optionProperty.DoubleValue = doubleVal;
                     }

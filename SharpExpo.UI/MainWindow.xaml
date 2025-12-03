@@ -72,7 +72,6 @@
                   BorderThickness="0"
                   SelectionMode="Single"
                   SelectionUnit="Cell"
-                  IsReadOnly="True"
                   RowHeaderWidth="0"
                   VerticalGridLinesBrush="#E0E0E0"
                   HorizontalGridLinesBrush="#E0E0E0"
@@ -83,8 +82,13 @@
                         <Setter.Value>
                             <Style TargetType="DataGridRow">
                                 <Setter Property="Background" Value="White"/>
-                                <Setter Property="MinHeight" Value="25"/>
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSectionHeader}" Value="True">
+                                        <Setter Property="MinHeight" Value="20"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsSectionHeader}" Value="False">
+                                        <Setter Property="MinHeight" Value="25"/>
+                                    </DataTrigger>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter Property="Background" Value="#F5F5F5"/>
                                     </Trigger>
@@ -149,6 +153,7 @@
                                 <!-- Название -->
                                 <TextBlock Text="{Binding SectionName}" 
                                            FontWeight="{Binding IsSectionHeader, Converter={StaticResource BoolToFontWeightConverter}}"
+                                           FontSize="{Binding IsSectionHeader, Converter={StaticResource BoolToFontSizeConverter}}"
                                            VerticalAlignment="Center"
                                            Visibility="{Binding IsSectionHeader, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <TextBlock.ToolTip>
@@ -183,7 +188,8 @@
                     <DataGridTemplateColumn.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="Background" Value="White"/>
-                            <Setter Property="IsEnabled" Value="False"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="BorderThickness" Value="0"/>
                             <Style.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="White"/>
@@ -193,17 +199,67 @@
                     </DataGridTemplateColumn.CellStyle>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="5,0">
+                            <Grid Margin="0">
                                 <TextBlock Text="{Binding PropertyValue}" 
                                            VerticalAlignment="Center"
-                                           Visibility="{Binding IsSectionHeader, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
-                                <!-- Иконка выпадающего списка -->
-                                <TextBlock Text="▼" 
-                                           FontSize="8"
-                                           VerticalAlignment="Center"
-                                           Margin="5,0,0,0"
-                                           Visibility="{Binding HasDropdown, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                            </StackPanel>
+                                           Margin="5,0,5,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding IsSectionHeader}" Value="False"/>
+                                                        <Condition Binding="{Binding IsEditable}" Value="False"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBox Text="{Binding PropertyValue, UpdateSourceTrigger=LostFocus}"
+                                         VerticalAlignment="Stretch"
+                                         VerticalContentAlignment="Center"
+                                         HorizontalAlignment="Stretch"
+                                         Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisibilityConverter}}"
+                                         KeyDown="PropertyValueTextBox_KeyDown"
+                                         LostFocus="PropertyValueTextBox_LostFocus"
+                                         Margin="0"
+                                         Padding="5,3">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="TextBox">
+                                                        <Border x:Name="Border"
+                                                                BorderBrush="Transparent" 
+                                                                BorderThickness="1" 
+                                                                Background="White"
+                                                                CornerRadius="0">
+                                                            <ScrollViewer x:Name="PART_ContentHost" 
+                                                                          Margin="0"
+                                                                          VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                                <StackPanel Orientation="Horizontal" 
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Margin="5,0,5,0"
+                                            Visibility="{Binding HasDropdown, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Text="▼" FontSize="8"/>
+                                </StackPanel>
+                            </Grid>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json;
 using SharpExpo.Contracts.DTOs;
 using SharpExpo.Contracts.Models;

@@ -1,3 +1,6 @@
+using System.Windows.Input;
+using SharpExpo.Contracts.Models;
+
 namespace SharpExpo.UI.ViewModels;
 
 /// <summary>
@@ -5,6 +8,9 @@ namespace SharpExpo.UI.ViewModels;
 /// </summary>
 public class PropertyRowViewModel : ViewModelBase
 {
+    private bool _isExpanded;
+    private string? _propertyValue;
+
     /// <summary>
     /// Указывает, является ли строка заголовком секции
     /// </summary>
@@ -23,7 +29,18 @@ public class PropertyRowViewModel : ViewModelBase
     /// <summary>
     /// Значение свойства
     /// </summary>
-    public string? PropertyValue { get; set; }
+    public string? PropertyValue
+    {
+        get => _propertyValue;
+        set
+        {
+            if (_propertyValue != value)
+            {
+                _propertyValue = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     /// <summary>
     /// Указывает, заблокировано ли свойство
@@ -43,7 +60,18 @@ public class PropertyRowViewModel : ViewModelBase
     /// <summary>
     /// Указывает, развернута ли секция
     /// </summary>
-    public bool IsExpanded { get; set; }
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set
+        {
+            if (_isExpanded != value)
+            {
+                _isExpanded = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     /// <summary>
     /// Описание свойства (для тултипа)
@@ -54,5 +82,26 @@ public class PropertyRowViewModel : ViewModelBase
     /// Команда для переключения состояния развернутости секции
     /// </summary>
     public ICommand? ToggleExpandCommand { get; set; }
+
+    /// <summary>
+    /// Ссылка на оригинальный OptionProperty для сохранения изменений
+    /// </summary>
+    public OptionProperty? OriginalProperty { get; set; }
+
+    /// <summary>
+    /// ID FamilyOption, к которому относится это свойство
+    /// </summary>
+    public string? FamilyOptionId { get; set; }
+
+    /// <summary>
+    /// Тип значения свойства
+    /// </summary>
+    public OptionValueType ValueType { get; set; }
+
+    /// <summary>
+    /// Указывает, можно ли редактировать это свойство
+    /// </summary>
+    public bool IsEditable => !IsSectionHeader && !IsLocked && 
+                              (ValueType == OptionValueType.String || ValueType == OptionValueType.Double);
 }
 

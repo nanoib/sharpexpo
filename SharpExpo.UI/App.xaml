@@ -9,6 +9,7 @@
         <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
         <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <converters:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter"/>
+        <converters:BoolToFontSizeConverter x:Key="BoolToFontSizeConverter"/>
         <converters:BoolToTriangleConverter x:Key="BoolToTriangleConverter"/>
         <converters:ExpandedToTriangleConverter x:Key="ExpandedToTriangleConverter"/>
     </Application.Resources>

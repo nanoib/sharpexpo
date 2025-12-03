@@ -77,5 +77,20 @@ public class RelayCommand : ICommand
                 System.Windows.MessageBoxImage.Error);
         }
     }
+
+    /// <summary>
+    /// Выполняет команду асинхронно и ждет завершения
+    /// </summary>
+    public async Task ExecuteAsync(object? parameter)
+    {
+        if (_asyncExecute != null)
+        {
+            await _asyncExecute();
+        }
+        else if (_execute != null)
+        {
+            _execute();
+        }
+    }
 }
 

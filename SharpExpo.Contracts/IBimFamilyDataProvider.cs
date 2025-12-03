@@ -32,6 +32,11 @@ public interface IBimFamilyDataProvider
     /// </summary>
     /// <returns>Список идентификаторов и имен BIM-семейств</returns>
     IEnumerable<BimFamily> LoadAllFamilies();
+
+    /// <summary>
+    /// Очищает кэш данных (если используется кэширование)
+    /// </summary>
+    void ClearCache();
 }
 
 

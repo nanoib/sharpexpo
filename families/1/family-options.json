@@ -1,4 +1,4 @@
-{
+﻿{
   "FamilyOptions": [
     {
       "Id": "option-basic-info",
@@ -9,7 +9,7 @@
           "Description": "Основное наименование компонента",
           "ValueType": "String",
           "CategoryName": "Наименование",
-          "Value": "1"
+          "Value": "Htllo"
         },
         {
           "Id": "opt-val-id",
