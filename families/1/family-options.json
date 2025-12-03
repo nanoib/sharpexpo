@@ -9,7 +9,7 @@
           "Description": "Основное наименование компонента",
           "ValueType": "String",
           "CategoryName": "Наименование",
-          "Value": "Htllo"
+          "Value": "Hуllo"
         },
         {
           "Id": "opt-val-id",

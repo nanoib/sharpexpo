@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SharpExpo.Contracts.DTOs;
 using SharpExpo.Contracts.Models;
-using SharpExpo.Family;
+using SharpExpo.Tests.Unit.Helpers;
 using SharpExpo.UI.Commands;
 using SharpExpo.UI.ViewModels;
 using Xunit;
@@ -88,8 +88,12 @@ public class IntegrationSaveReloadTest : IDisposable
     public async Task SaveAndReload_StringValue_PersistsAfterRestart()
     {
         // Arrange - Первый запуск приложения
-        var dataProvider1 = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
-        var viewModel1 = new MainWindowViewModel(dataProvider1, TestFamilyId, _testFamilyOptionsPath);
+        var dataProvider1 = TestServiceFactory.CreateDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
+        var viewModel1 = TestServiceFactory.CreateMainWindowViewModel(
+            dataProvider1,
+            TestFamilyId,
+            _testFamilyOptionsPath,
+            _testFamiliesDirectory);
 
         // Загружаем данные
         if (viewModel1.LoadCommand is RelayCommand relayCommand1)
@@ -114,6 +118,7 @@ public class IntegrationSaveReloadTest : IDisposable
         await viewModel1.SavePropertyValueAsync(propertyRow, newValue);
 
         // Проверяем, что значение обновилось в ViewModel
+        Assert.NotNull(propertyRow.OriginalProperty);
         Assert.Equal(newValue, propertyRow.PropertyValue);
         Assert.Equal(newValue, propertyRow.OriginalProperty.StringValue);
 
@@ -126,16 +131,20 @@ public class IntegrationSaveReloadTest : IDisposable
 
         Assert.NotNull(savedDto);
         var savedProperty = savedDto.FamilyOptions
-            .FirstOrDefault(fo => fo.Id == TestFamilyOptionId)?
-            .OptionProperties.FirstOrDefault(op => op.Id == TestPropertyId);
+            .FirstOrDefault(fo => fo.Id == TestFamilyOptionId)
+            ?.OptionProperties.FirstOrDefault(op => op.Id == TestPropertyId);
 
         Assert.NotNull(savedProperty);
-        Assert.Equal(newValue, savedProperty.Value?.ToString());
+        Assert.Equal(newValue, savedProperty!.Value?.ToString());
 
         // Arrange - Второй запуск приложения (симуляция перезапуска)
         // Создаем новый провайдер и ViewModel, как будто приложение перезапустилось
-        var dataProvider2 = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
-        var viewModel2 = new MainWindowViewModel(dataProvider2, TestFamilyId, _testFamilyOptionsPath);
+        var dataProvider2 = TestServiceFactory.CreateDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
+        var viewModel2 = TestServiceFactory.CreateMainWindowViewModel(
+            dataProvider2,
+            TestFamilyId,
+            _testFamilyOptionsPath,
+            _testFamiliesDirectory);
 
         // Загружаем данные заново
         if (viewModel2.LoadCommand is RelayCommand relayCommand2)
@@ -153,6 +162,7 @@ public class IntegrationSaveReloadTest : IDisposable
             p.OriginalProperty.Id == TestPropertyId);
 
         Assert.NotNull(reloadedPropertyRow);
+        Assert.NotNull(reloadedPropertyRow.OriginalProperty);
 
         // Assert - Проверяем, что сохраненное значение загрузилось
         Assert.Equal(newValue, reloadedPropertyRow.PropertyValue);
@@ -167,11 +177,11 @@ public class IntegrationSaveReloadTest : IDisposable
 
         Assert.NotNull(finalDto);
         var finalProperty = finalDto.FamilyOptions
-            .FirstOrDefault(fo => fo.Id == TestFamilyOptionId)?
-            .OptionProperties.FirstOrDefault(op => op.Id == TestPropertyId);
+            .FirstOrDefault(fo => fo.Id == TestFamilyOptionId)
+            ?.OptionProperties.FirstOrDefault(op => op.Id == TestPropertyId);
 
         Assert.NotNull(finalProperty);
-        Assert.Equal(newValue, finalProperty.Value?.ToString());
+        Assert.Equal(newValue, finalProperty!.Value?.ToString());
     }
 
     public void Dispose()

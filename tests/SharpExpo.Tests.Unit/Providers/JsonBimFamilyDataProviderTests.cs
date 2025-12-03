@@ -3,6 +3,7 @@ using System.Text.Json;
 using SharpExpo.Contracts.DTOs;
 using SharpExpo.Contracts.Models;
 using SharpExpo.Family;
+using SharpExpo.Family.Mappers;
 
 namespace SharpExpo.Tests.Unit.Providers;
 
@@ -54,7 +55,8 @@ public class JsonBimFamilyDataProviderTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(_testFamiliesDirectory, $"{familyId}.json"), familyJson);
         await File.WriteAllTextAsync(_testFamilyOptionsFile, familyOptionsJson);
 
-        var provider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsFile);
+        var mapper = new DtoMapper();
+        var provider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsFile, mapper);
 
         // Act
         var result = await provider.LoadFamilyDataAsync(familyId);
@@ -77,7 +79,8 @@ public class JsonBimFamilyDataProviderTests : IDisposable
 
         await File.WriteAllTextAsync(_testFamilyOptionsFile, familyOptionsJson);
 
-        var provider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsFile);
+        var mapper = new DtoMapper();
+        var provider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsFile, mapper);
 
         // Act
         var result = await provider.LoadFamilyDataAsync("non-existent");
@@ -118,7 +121,8 @@ public class JsonBimFamilyDataProviderTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(_testFamiliesDirectory, $"{familyId}.json"), familyJson);
         await File.WriteAllTextAsync(_testFamilyOptionsFile, familyOptionsJson);
 
-        var provider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsFile);
+        var mapper = new DtoMapper();
+        var provider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsFile, mapper);
 
         // Act
         var result = await provider.LoadFamilyDataAsync(familyId);

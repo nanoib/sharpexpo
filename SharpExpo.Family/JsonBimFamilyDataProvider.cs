@@ -2,37 +2,54 @@ using System.Text.Json;
 using SharpExpo.Contracts;
 using SharpExpo.Contracts.DTOs;
 using SharpExpo.Contracts.Models;
+using SharpExpo.Family.Mappers;
 
 namespace SharpExpo.Family;
 
 /// <summary>
-/// Реализация провайдера данных BIM-семейств из JSON файлов
+/// JSON-based implementation of <see cref="IBimFamilyDataProvider"/> that loads BIM family data from JSON files.
 /// </summary>
+/// <remarks>
+/// WHY: This class implements IBimFamilyDataProvider to provide data access for BIM families.
+/// It uses caching to improve performance when loading multiple families and delegates mapping to IDtoMapper
+/// to follow the Single Responsibility Principle.
+/// </remarks>
 public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
 {
     private readonly string _familiesDirectory;
     private readonly string _familyOptionsFilePath;
+    private readonly IDtoMapper _mapper;
     private Dictionary<string, FamilyOption>? _cachedFamilyOptions;
 
-    public JsonBimFamilyDataProvider(string familiesDirectory, string familyOptionsFilePath)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JsonBimFamilyDataProvider"/> class.
+    /// </summary>
+    /// <param name="familiesDirectory">The directory containing family JSON files.</param>
+    /// <param name="familyOptionsFilePath">The path to the family-options.json file.</param>
+    /// <param name="mapper">The mapper to use for converting DTOs to domain models. If <see langword="null"/>, uses a default mapper.</param>
+    public JsonBimFamilyDataProvider(string familiesDirectory, string familyOptionsFilePath, IDtoMapper? mapper = null)
     {
         _familiesDirectory = Path.GetFullPath(familiesDirectory ?? throw new ArgumentNullException(nameof(familiesDirectory)));
         _familyOptionsFilePath = Path.GetFullPath(familyOptionsFilePath ?? throw new ArgumentNullException(nameof(familyOptionsFilePath)));
+        _mapper = mapper ?? new DtoMapper();
         
         System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider] Инициализация:");
         System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider]   FamiliesDirectory: {_familiesDirectory}");
         System.Diagnostics.Debug.WriteLine($"[JsonBimFamilyDataProvider]   FamilyOptionsFilePath: {_familyOptionsFilePath}");
     }
 
+    /// <inheritdoc/>
     public async Task<BimFamilyData?> LoadFamilyDataAsync(string familyId)
     {
-        // Загружаем кэш опций семейства, если еще не загружен
+        ArgumentNullException.ThrowIfNull(familyId);
+
+        // Load family options cache if not already loaded
         if (_cachedFamilyOptions == null)
         {
             await LoadFamilyOptionsCacheAsync();
         }
 
-        // Загружаем данные семейства
+        // Load family data
         var familyFilePath = Path.Combine(_familiesDirectory, $"{familyId}.json");
         if (!File.Exists(familyFilePath))
         {
@@ -45,21 +62,13 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
             PropertyNameCaseInsensitive = true
         });
 
-        if (familyDto == null)
+        var family = _mapper.MapToBimFamily(familyDto);
+        if (family == null)
         {
             return null;
         }
 
-        // Преобразуем DTO в модель
-        var family = new BimFamily
-        {
-            Id = familyDto.Id,
-            Name = familyDto.Name,
-            FamilyOptionIds = familyDto.FamilyOptionIds,
-            CategoryOrder = familyDto.CategoryOrder
-        };
-
-        // Загружаем соответствующие FamilyOption
+        // Load corresponding FamilyOptions
         var familyOptions = new Dictionary<string, FamilyOption>();
         foreach (var optionId in family.FamilyOptionIds)
         {
@@ -76,15 +85,18 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
         };
     }
 
+    /// <inheritdoc/>
     public BimFamilyData? LoadFamilyData(string familyId)
     {
-        // Загружаем кэш опций семейства, если еще не загружен
+        ArgumentNullException.ThrowIfNull(familyId);
+
+        // Load family options cache if not already loaded
         if (_cachedFamilyOptions == null)
         {
             LoadFamilyOptionsCache();
         }
 
-        // Загружаем данные семейства
+        // Load family data
         var familyFilePath = Path.Combine(_familiesDirectory, $"{familyId}.json");
         if (!File.Exists(familyFilePath))
         {
@@ -97,21 +109,13 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
             PropertyNameCaseInsensitive = true
         });
 
-        if (familyDto == null)
+        var family = _mapper.MapToBimFamily(familyDto);
+        if (family == null)
         {
             return null;
         }
 
-        // Преобразуем DTO в модель
-        var family = new BimFamily
-        {
-            Id = familyDto.Id,
-            Name = familyDto.Name,
-            FamilyOptionIds = familyDto.FamilyOptionIds,
-            CategoryOrder = familyDto.CategoryOrder
-        };
-
-        // Загружаем соответствующие FamilyOption
+        // Load corresponding FamilyOptions
         var familyOptions = new Dictionary<string, FamilyOption>();
         foreach (var optionId in family.FamilyOptionIds)
         {
@@ -128,6 +132,7 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
         };
     }
 
+    /// <inheritdoc/>
     public async Task<IEnumerable<BimFamily>> LoadAllFamiliesAsync()
     {
         if (!Directory.Exists(_familiesDirectory))
@@ -148,26 +153,23 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (familyDto != null)
+                var family = _mapper.MapToBimFamily(familyDto);
+                if (family != null)
                 {
-                    families.Add(new BimFamily
-                    {
-                        Id = familyDto.Id,
-                        Name = familyDto.Name,
-                        FamilyOptionIds = familyDto.FamilyOptionIds,
-                        CategoryOrder = familyDto.CategoryOrder
-                    });
+                    families.Add(family);
                 }
             }
             catch
             {
-                // Игнорируем файлы с ошибками
+                // WHY: We silently ignore files with errors to allow loading other families even if some files are corrupted.
+                // In production, this could be enhanced with logging or error reporting.
             }
         }
 
         return families;
     }
 
+    /// <inheritdoc/>
     public IEnumerable<BimFamily> LoadAllFamilies()
     {
         if (!Directory.Exists(_familiesDirectory))
@@ -188,34 +190,36 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (familyDto != null)
+                var family = _mapper.MapToBimFamily(familyDto);
+                if (family != null)
                 {
-                    families.Add(new BimFamily
-                    {
-                        Id = familyDto.Id,
-                        Name = familyDto.Name,
-                        FamilyOptionIds = familyDto.FamilyOptionIds,
-                        CategoryOrder = familyDto.CategoryOrder
-                    });
+                    families.Add(family);
                 }
             }
             catch
             {
-                // Игнорируем файлы с ошибками
+                // WHY: We silently ignore files with errors to allow loading other families even if some files are corrupted.
+                // In production, this could be enhanced with logging or error reporting.
             }
         }
 
         return families;
     }
 
-    /// <summary>
-    /// Очищает кэш опций семейства
-    /// </summary>
+    /// <inheritdoc/>
     public void ClearCache()
     {
         _cachedFamilyOptions = null;
     }
 
+    /// <summary>
+    /// Loads the family options cache asynchronously from the family-options.json file.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous cache loading operation.</returns>
+    /// <remarks>
+    /// WHY: This method loads and caches family options to improve performance when loading multiple families.
+    /// The cache is stored in memory and can be cleared using <see cref="ClearCache"/>.
+    /// </remarks>
     private async Task LoadFamilyOptionsCacheAsync()
     {
         var absolutePath = Path.GetFullPath(_familyOptionsFilePath);
@@ -244,7 +248,7 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
         {
             foreach (var optionDto in optionsDto.FamilyOptions)
             {
-                var familyOption = ConvertToFamilyOption(optionDto);
+                var familyOption = _mapper.MapToFamilyOption(optionDto);
                 if (familyOption != null)
                 {
                     _cachedFamilyOptions[familyOption.Id] = familyOption;
@@ -253,6 +257,13 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
         }
     }
 
+    /// <summary>
+    /// Loads the family options cache synchronously from the family-options.json file.
+    /// </summary>
+    /// <remarks>
+    /// WHY: This method provides a synchronous alternative to <see cref="LoadFamilyOptionsCacheAsync"/> for scenarios
+    /// where async operations are not available or desired.
+    /// </remarks>
     private void LoadFamilyOptionsCache()
     {
         if (!File.Exists(_familyOptionsFilePath))
@@ -273,7 +284,7 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
         {
             foreach (var optionDto in optionsDto.FamilyOptions)
             {
-                var familyOption = ConvertToFamilyOption(optionDto);
+                var familyOption = _mapper.MapToFamilyOption(optionDto);
                 if (familyOption != null)
                 {
                     _cachedFamilyOptions[familyOption.Id] = familyOption;
@@ -282,137 +293,5 @@ public class JsonBimFamilyDataProvider : IBimFamilyDataProvider
         }
     }
 
-    private FamilyOption? ConvertToFamilyOption(FamilyOptionItemDto dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Id))
-        {
-            return null;
-        }
-
-        var familyOption = new FamilyOption
-        {
-            Id = dto.Id,
-            OptionProperties = new List<OptionProperty>()
-        };
-
-        if (dto.OptionProperties != null)
-        {
-            foreach (var valueDto in dto.OptionProperties)
-            {
-                var optionProperty = ConvertToOptionProperty(valueDto);
-                if (optionProperty != null)
-                {
-                    familyOption.OptionProperties.Add(optionProperty);
-                }
-            }
-        }
-
-        return familyOption;
-    }
-
-    private OptionProperty? ConvertToOptionProperty(OptionPropertyDto dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.Id) || string.IsNullOrWhiteSpace(dto.PropertyName))
-        {
-            return null;
-        }
-
-        // Парсим тип значения
-        var valueType = ParseValueType(dto.ValueType);
-        if (valueType == null)
-        {
-            return null;
-        }
-
-        var optionProperty = new OptionProperty
-        {
-            Id = dto.Id,
-            PropertyName = dto.PropertyName,
-            Description = dto.Description,
-            ValueType = valueType.Value,
-            CategoryName = dto.CategoryName ?? string.Empty
-        };
-
-        // Устанавливаем значение в зависимости от типа
-        switch (valueType.Value)
-        {
-            case OptionValueType.String:
-                // Для String типа null преобразуем в пустую строку
-                optionProperty.StringValue = dto.Value?.ToString() ?? string.Empty;
-                break;
-
-            case OptionValueType.Double:
-                if (dto.Value != null)
-                {
-                    // Пробуем разные способы парсинга
-                    double doubleVal = 0;
-                    bool parsed = false;
-                    
-                    // Сначала пробуем как число напрямую
-                    if (dto.Value is double d)
-                    {
-                        doubleVal = d;
-                        parsed = true;
-                    }
-                    else if (dto.Value is int i)
-                    {
-                        doubleVal = i;
-                        parsed = true;
-                    }
-                    else if (dto.Value is long l)
-                    {
-                        doubleVal = l;
-                        parsed = true;
-                    }
-                    else if (dto.Value is decimal dec)
-                    {
-                        doubleVal = (double)dec;
-                        parsed = true;
-                    }
-                    else
-                    {
-                        // Пробуем парсить строку с учетом разных культур
-                        var strValue = dto.Value.ToString();
-                        if (double.TryParse(strValue, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out doubleVal))
-                        {
-                            parsed = true;
-                        }
-                        else if (double.TryParse(strValue, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out doubleVal))
-                        {
-                            parsed = true;
-                        }
-                    }
-                    
-                    if (parsed)
-                    {
-                        optionProperty.DoubleValue = doubleVal;
-                    }
-                }
-                break;
-
-            case OptionValueType.Enumeration:
-                // Для Enumeration типа null преобразуем в пустую строку
-                optionProperty.EnumValue = dto.Value?.ToString() ?? string.Empty;
-                break;
-        }
-
-        return optionProperty;
-    }
-
-    private OptionValueType? ParseValueType(string? valueTypeString)
-    {
-        if (string.IsNullOrWhiteSpace(valueTypeString))
-        {
-            return OptionValueType.String;
-        }
-
-        return valueTypeString.ToLowerInvariant() switch
-        {
-            "string" or "строка" => OptionValueType.String,
-            "double" or "число" or "number" => OptionValueType.Double,
-            "enumeration" or "перечисление" or "enum" => OptionValueType.Enumeration,
-            _ => null
-        };
-    }
 }
 

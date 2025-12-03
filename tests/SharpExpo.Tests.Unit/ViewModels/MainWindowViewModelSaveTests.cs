@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SharpExpo.Contracts.DTOs;
 using SharpExpo.Contracts.Models;
-using SharpExpo.Family;
+using SharpExpo.Tests.Unit.Helpers;
 using SharpExpo.UI.Commands;
 using SharpExpo.UI.ViewModels;
 using Xunit;
@@ -123,14 +123,18 @@ public class MainWindowViewModelSaveTests : IDisposable
         var familyFile = Path.Combine(_testFamiliesDirectory, "test-family-id.json");
         Assert.True(File.Exists(familyFile), $"Файл семейства не найден: {familyFile}");
         
-        var dataProvider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
+        var dataProvider = TestServiceFactory.CreateDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
         
         // Проверяем, что семейство можно загрузить
         var testFamilyData = await dataProvider.LoadFamilyDataAsync("test-family-id");
         Assert.NotNull(testFamilyData);
         Assert.True(testFamilyData.Validate(), "Данные семейства не прошли валидацию");
         
-        var viewModel = new MainWindowViewModel(dataProvider, "test-family-id", _testFamilyOptionsPath);
+        var viewModel = TestServiceFactory.CreateMainWindowViewModel(
+            dataProvider,
+            "test-family-id",
+            _testFamilyOptionsPath,
+            _testFamiliesDirectory);
         
         // Загружаем данные через ExecuteAsync
         if (viewModel.LoadCommand is RelayCommand relayCommand)
@@ -207,14 +211,18 @@ public class MainWindowViewModelSaveTests : IDisposable
         var familyFile = Path.Combine(_testFamiliesDirectory, "test-family-id.json");
         Assert.True(File.Exists(familyFile), $"Файл семейства не найден: {familyFile}");
         
-        var dataProvider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
+        var dataProvider = TestServiceFactory.CreateDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
         
         // Проверяем, что семейство можно загрузить
         var testFamilyData = await dataProvider.LoadFamilyDataAsync("test-family-id");
         Assert.NotNull(testFamilyData);
         Assert.True(testFamilyData.Validate(), "Данные семейства не прошли валидацию");
         
-        var viewModel = new MainWindowViewModel(dataProvider, "test-family-id", _testFamilyOptionsPath);
+        var viewModel = TestServiceFactory.CreateMainWindowViewModel(
+            dataProvider,
+            "test-family-id",
+            _testFamilyOptionsPath,
+            _testFamiliesDirectory);
         
         // Загружаем данные через ExecuteAsync
         if (viewModel.LoadCommand is RelayCommand relayCommand)
@@ -306,14 +314,18 @@ public class MainWindowViewModelSaveTests : IDisposable
         var familyFile = Path.Combine(_testFamiliesDirectory, "test-family-id.json");
         Assert.True(File.Exists(familyFile), $"Файл семейства не найден: {familyFile}");
         
-        var dataProvider = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
+        var dataProvider = TestServiceFactory.CreateDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
         
         // Проверяем, что семейство можно загрузить
         var testFamilyData = await dataProvider.LoadFamilyDataAsync("test-family-id");
         Assert.NotNull(testFamilyData);
         Assert.True(testFamilyData.Validate(), "Данные семейства не прошли валидацию");
         
-        var viewModel = new MainWindowViewModel(dataProvider, "test-family-id", _testFamilyOptionsPath);
+        var viewModel = TestServiceFactory.CreateMainWindowViewModel(
+            dataProvider,
+            "test-family-id",
+            _testFamilyOptionsPath,
+            _testFamiliesDirectory);
         
         // Загружаем данные через ExecuteAsync
         if (viewModel.LoadCommand is RelayCommand relayCommand)
@@ -352,6 +364,7 @@ public class MainWindowViewModelSaveTests : IDisposable
             p.OriginalProperty.Id == "prop-double");
         
         Assert.NotNull(propertyRow);
+        Assert.NotNull(propertyRow.OriginalProperty);
         
         var originalValue = propertyRow.PropertyValue;
         var originalDoubleValue = propertyRow.OriginalProperty.DoubleValue;
@@ -390,14 +403,18 @@ public class MainWindowViewModelSaveTests : IDisposable
         var familyFile = Path.Combine(_testFamiliesDirectory, "test-family-id.json");
         Assert.True(File.Exists(familyFile), $"Файл семейства не найден: {familyFile}");
         
-        var dataProvider1 = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
+        var dataProvider1 = TestServiceFactory.CreateDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
         
         // Проверяем, что семейство можно загрузить
         var testFamilyData1 = await dataProvider1.LoadFamilyDataAsync("test-family-id");
         Assert.NotNull(testFamilyData1);
         Assert.True(testFamilyData1.Validate(), "Данные семейства не прошли валидацию");
         
-        var viewModel1 = new MainWindowViewModel(dataProvider1, "test-family-id", _testFamilyOptionsPath);
+        var viewModel1 = TestServiceFactory.CreateMainWindowViewModel(
+            dataProvider1,
+            "test-family-id",
+            _testFamilyOptionsPath,
+            _testFamiliesDirectory);
         
         // Загружаем данные через ExecuteAsync
         if (viewModel1.LoadCommand is RelayCommand relayCommand1)
@@ -426,8 +443,12 @@ public class MainWindowViewModelSaveTests : IDisposable
         await viewModel1.SavePropertyValueAsync(propertyRow, newValue);
 
         // Act - создаем новый провайдер и загружаем данные заново
-        var dataProvider2 = new JsonBimFamilyDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
-        var viewModel2 = new MainWindowViewModel(dataProvider2, "test-family-id", _testFamilyOptionsPath);
+        var dataProvider2 = TestServiceFactory.CreateDataProvider(_testFamiliesDirectory, _testFamilyOptionsPath);
+        var viewModel2 = TestServiceFactory.CreateMainWindowViewModel(
+            dataProvider2,
+            "test-family-id",
+            _testFamilyOptionsPath,
+            _testFamiliesDirectory);
         if (viewModel2.LoadCommand is RelayCommand relayCommand2)
         {
             await relayCommand2.ExecuteAsync(null);
@@ -448,6 +469,7 @@ public class MainWindowViewModelSaveTests : IDisposable
             p.OriginalProperty.Id == "prop-string");
         
         Assert.NotNull(reloadedPropertyRow);
+        Assert.NotNull(reloadedPropertyRow.OriginalProperty);
         Assert.Equal(newValue, reloadedPropertyRow.PropertyValue);
         Assert.Equal(newValue, reloadedPropertyRow.OriginalProperty.StringValue);
     }

@@ -1,48 +1,68 @@
-using System;
 using System.IO;
 
 namespace SharpExpo.UI.Services;
 
 /// <summary>
-/// Простой логгер для отладки
+/// Default implementation of <see cref="ILogger"/> that writes log messages to both debug output and a file.
+/// This implementation provides file-based logging with automatic directory creation.
 /// </summary>
-public static class Logger
+/// <remarks>
+/// WHY: This class implements ILogger to enable dependency injection and improve testability.
+/// The file-based logging provides persistent logs for debugging production issues.
+/// </remarks>
+public class Logger : ILogger
 {
-    public static string LogFilePath { get; } = Path.Combine(
+    private readonly string _logFilePath;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Logger"/> class.
+    /// </summary>
+    /// <param name="logFilePath">The path to the log file. If <see langword="null"/>, uses the default path in LocalApplicationData.</param>
+    public Logger(string? logFilePath = null)
+    {
+        _logFilePath = logFilePath ?? Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "SharpExpo",
         "log.txt");
 
-    static Logger()
-    {
-        var logDirectory = Path.GetDirectoryName(LogFilePath);
+        var logDirectory = Path.GetDirectoryName(_logFilePath);
         if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
         {
             Directory.CreateDirectory(logDirectory);
         }
     }
 
-    public static void Log(string message)
+    /// <inheritdoc/>
+    public string LogFilePath => _logFilePath;
+
+    /// <inheritdoc/>
+    public void Log(string message)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         var logMessage = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}";
         System.Diagnostics.Debug.WriteLine(logMessage);
         
         try
         {
-            File.AppendAllText(LogFilePath, logMessage + Environment.NewLine);
+            File.AppendAllText(_logFilePath, logMessage + Environment.NewLine);
         }
         catch
         {
-            // Игнорируем ошибки записи в лог
+            // WHY: We silently ignore file write errors to prevent logging failures from crashing the application.
+            // In production, this could be enhanced with a fallback mechanism or retry logic.
         }
     }
 
-    public static void LogError(string message, Exception? ex = null)
+    /// <inheritdoc/>
+    public void LogError(string message, Exception? exception = null)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         var errorMessage = $"[ERROR] {message}";
-        if (ex != null)
+        if (exception != null)
         {
-            errorMessage += $"{Environment.NewLine}Exception: {ex.GetType().Name}{Environment.NewLine}Message: {ex.Message}{Environment.NewLine}Stack: {ex.StackTrace}";
+            errorMessage += $"{Environment.NewLine}Exception: {exception.GetType().Name}{Environment.NewLine}Message: {exception.Message}{Environment.NewLine}Stack: {exception.StackTrace}";
         }
         Log(errorMessage);
     }
