@@ -42,3 +42,4 @@ SharpExpo.UI.exe --family-path "C:\repos\sharpexpo\families\1\family-options.jso
 - `family-options.schema.json` - схема для family-options.json
 - `bim-family.schema.json` - схема для файлов семейств
 
+

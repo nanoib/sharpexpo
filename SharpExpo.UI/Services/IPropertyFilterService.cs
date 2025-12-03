@@ -17,3 +17,4 @@ public interface IPropertyFilterService
     List<PropertyRowViewModel> FilterProperties(List<PropertyRowViewModel> allProperties, string searchText);
 }
 
+
