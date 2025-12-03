@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,17 +6,18 @@ using SharpExpo.Contracts;
 using SharpExpo.Contracts.DTOs;
 using SharpExpo.UI.Services;
 using SharpExpo.UI.ViewModels;
+using SharpExpo.UI.Windows.BimPropertiesWindow.ViewModels;
 
-namespace SharpExpo.UI;
+namespace SharpExpo.UI.Windows.BimPropertiesWindow;
 
 /// <summary>
-/// Interaction logic for MainWindow.xaml.
+/// Interaction logic for BimPropertiesWindow.xaml.
 /// </summary>
 /// <remarks>
 /// WHY: This class handles UI initialization and event handling, delegating business logic to services and ViewModels.
 /// It uses dependency injection to resolve services, maintaining separation of concerns.
 /// </remarks>
-public partial class MainWindow : Window
+public partial class BimPropertiesWindow : Window
 {
     private readonly ILogger _logger;
     private readonly IMessageService _messageService;
@@ -25,9 +26,9 @@ public partial class MainWindow : Window
     private bool _isSaving = false;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MainWindow"/> class.
+    /// Initializes a new instance of the <see cref="BimPropertiesWindow"/> class.
     /// </summary>
-    public MainWindow()
+    public BimPropertiesWindow()
     {
         try
         {
@@ -37,7 +38,7 @@ public partial class MainWindow : Window
             _fileService = new FileService();
             _commandLineService = new CommandLineArgumentsService(_logger);
 
-            _logger.Log("Инициализация MainWindow...");
+            _logger.Log("Инициализация BimPropertiesWindow...");
             InitializeComponent();
             _logger.Log("InitializeComponent выполнен");
 
@@ -93,7 +94,7 @@ public partial class MainWindow : Window
             var saveService = serviceProvider.GetRequiredService<IPropertySaveService>();
             var viewModelFactory = serviceProvider.GetRequiredService<IPropertyViewModelFactory>();
 
-            var viewModel = new MainWindowViewModel(
+            var viewModel = new BimPropertiesWindowViewModel(
                 dataProvider,
                 filterService,
                 saveService,
@@ -128,11 +129,11 @@ public partial class MainWindow : Window
                 }
             };
 
-            _logger.Log("MainWindow инициализирован успешно");
+            _logger.Log("BimPropertiesWindow инициализирован успешно");
         }
         catch (Exception ex)
         {
-            _logger?.LogError("Критическая ошибка при инициализации MainWindow", ex);
+            _logger?.LogError("Критическая ошибка при инициализации BimPropertiesWindow", ex);
             _messageService?.ShowError(
                 $"Критическая ошибка при инициализации окна: {ex.Message}\n\nДетали в логе: {_logger?.LogFilePath ?? "неизвестно"}",
                 "Критическая ошибка");
@@ -202,18 +203,18 @@ public partial class MainWindow : Window
     /// <param name="e">The event arguments.</param>
     private void ClearSearch_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is MainWindowViewModel viewModel)
+        if (DataContext is BimPropertiesWindowViewModel viewModel)
         {
             viewModel.SearchText = string.Empty;
         }
     }
 
     /// <summary>
-    /// Handles the MainWindow closing event.
+    /// Handles the BimPropertiesWindow closing event.
     /// </summary>
     /// <param name="sender">The event sender.</param>
     /// <param name="e">The event arguments.</param>
-    private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    private void BimPropertiesWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
         _logger.Log("Окно закрывается");
     }
@@ -346,7 +347,7 @@ public partial class MainWindow : Window
     private async Task SavePropertyValue(System.Windows.Controls.TextBox textBox)
     {
         if (textBox.DataContext is PropertyRowViewModel propertyRow &&
-            DataContext is MainWindowViewModel viewModel)
+            DataContext is BimPropertiesWindowViewModel viewModel)
         {
             // Use value from TextBox directly, as binding may not have updated yet
             var newValue = textBox.Text;
@@ -370,3 +371,4 @@ public partial class MainWindow : Window
         }
     }
 }
+

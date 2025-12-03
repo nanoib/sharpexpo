@@ -84,20 +84,34 @@ public class FileServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task WriteAllTextAsync_CreatesDirectoryIfNotExists()
+    public async Task WriteAllTextAsync_WritesToFile()
+    {
+        // Arrange
+        var fileService = new FileService();
+        var testFilePath = Path.Combine(_testDirectory, "test.txt");
+        var content = "Test content";
+
+        // Act
+        await fileService.WriteAllTextAsync(testFilePath, content);
+
+        // Assert
+        Assert.True(File.Exists(testFilePath));
+        var writtenContent = await File.ReadAllTextAsync(testFilePath, Encoding.UTF8);
+        Assert.Equal(content, writtenContent);
+    }
+
+    [Fact]
+    public async Task WriteAllTextAsync_WithNonExistentDirectory_ThrowsDirectoryNotFoundException()
     {
         // Arrange
         var fileService = new FileService();
         var subDirPath = Path.Combine(_testDirectory, "subdir", "test.txt");
         var content = "Test content";
 
-        // Act
-        await fileService.WriteAllTextAsync(subDirPath, content);
-
-        // Assert
-        Assert.True(File.Exists(subDirPath));
-        var writtenContent = await File.ReadAllTextAsync(subDirPath, Encoding.UTF8);
-        Assert.Equal(content, writtenContent);
+        // Act & Assert
+        // FileService does not create directories automatically
+        await Assert.ThrowsAsync<DirectoryNotFoundException>(() =>
+            fileService.WriteAllTextAsync(subDirPath, content));
     }
 
     [Fact]

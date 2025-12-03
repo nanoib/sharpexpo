@@ -4,6 +4,7 @@ using SharpExpo.Family;
 using SharpExpo.Family.Mappers;
 using SharpExpo.UI.Services;
 using SharpExpo.UI.ViewModels;
+using SharpExpo.UI.Windows.BimPropertiesWindow.ViewModels;
 
 namespace SharpExpo.Tests.Unit.Helpers;
 
@@ -88,14 +89,14 @@ public static class TestServiceFactory
     }
 
     /// <summary>
-    /// Creates a test MainWindowViewModel instance with all required dependencies.
+    /// Creates a test BimPropertiesWindowViewModel instance with all required dependencies.
     /// </summary>
     /// <param name="dataProvider">The data provider to use.</param>
     /// <param name="familyId">The family ID to load.</param>
     /// <param name="familyOptionsFilePath">The path to the family-options.json file.</param>
     /// <param name="familiesDirectory">The directory containing family JSON files.</param>
-    /// <returns>A MainWindowViewModel instance configured for testing.</returns>
-    public static MainWindowViewModel CreateMainWindowViewModel(
+    /// <returns>A BimPropertiesWindowViewModel instance configured for testing.</returns>
+    public static BimPropertiesWindowViewModel CreateMainWindowViewModel(
         IBimFamilyDataProvider dataProvider,
         string familyId,
         string familyOptionsFilePath,
@@ -107,7 +108,7 @@ public static class TestServiceFactory
         var saveService = CreatePropertySaveService(dataProvider);
         var viewModelFactory = CreatePropertyViewModelFactory();
 
-        return new MainWindowViewModel(
+        return new BimPropertiesWindowViewModel(
             dataProvider,
             filterService,
             saveService,

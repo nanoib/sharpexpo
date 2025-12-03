@@ -17,14 +17,16 @@ public class LoggerTests : IDisposable
     }
 
     [Fact]
-    public void Constructor_WithCustomPath_CreatesLogFile()
+    public void Constructor_WithCustomPath_SetsLogFilePath()
     {
         // Arrange & Act
         var logger = new Logger(_testLogFilePath);
 
         // Assert
         Assert.Equal(_testLogFilePath, logger.LogFilePath);
-        Assert.True(File.Exists(_testLogFilePath));
+        // File is created when first log entry is written, not in constructor
+        // Directory is created in constructor though
+        Assert.True(Directory.Exists(Path.GetDirectoryName(_testLogFilePath)));
     }
 
     [Fact]

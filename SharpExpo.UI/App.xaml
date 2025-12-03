@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SharpExpo.UI"
              xmlns:converters="clr-namespace:SharpExpo.UI.Converters"
-             StartupUri="MainWindow.xaml">
+             StartupUri="Windows/BimPropertiesWindow/BimPropertiesWindow.xaml">
     <Application.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>

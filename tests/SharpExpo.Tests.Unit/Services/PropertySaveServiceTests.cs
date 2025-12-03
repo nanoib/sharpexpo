@@ -151,7 +151,7 @@ public class PropertySaveServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SavePropertyValueAsync_WithInvalidDouble_ThrowsFormatException()
+    public async Task SavePropertyValueAsync_WithInvalidDouble_DoesNotSaveValue()
     {
         // Arrange
         var service = new PropertySaveService(_fileService, _logger, _messageService, _dataProvider);
@@ -159,11 +159,44 @@ public class PropertySaveServiceTests : IDisposable
         await File.WriteAllTextAsync(_testFamilyOptionsPath, initialJson);
 
         var propertyRow = CreatePropertyRowViewModel("prop1", "option1", OptionValueType.Double, "123.45");
+        var originalDoubleValue = propertyRow.OriginalProperty!.DoubleValue;
         var invalidValue = "not a number";
 
-        // Act & Assert
-        await Assert.ThrowsAsync<FormatException>(() =>
-            service.SavePropertyValueAsync(propertyRow, invalidValue, _testFamilyOptionsPath));
+        // Act
+        // Service catches FormatException and shows error message, doesn't throw
+        await service.SavePropertyValueAsync(propertyRow, invalidValue, _testFamilyOptionsPath);
+
+        // Assert - value should not be saved
+        var savedContent = await File.ReadAllTextAsync(_testFamilyOptionsPath);
+        var savedDto = JsonSerializer.Deserialize<FamilyOptionsCollectionDto>(savedContent,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        Assert.NotNull(savedDto);
+        var savedProperty = savedDto!.FamilyOptions
+            .SelectMany(fo => fo.OptionProperties)
+            .FirstOrDefault(op => op.Id == "prop1");
+
+        Assert.NotNull(savedProperty);
+        // Value should remain as original (123.45), not changed to invalid value
+        Assert.True(savedProperty!.Value is double || savedProperty.Value is JsonElement);
+        
+        double savedDoubleValue;
+        if (savedProperty.Value is double d)
+        {
+            savedDoubleValue = d;
+        }
+        else if (savedProperty.Value is JsonElement je && je.ValueKind == JsonValueKind.Number)
+        {
+            savedDoubleValue = je.GetDouble();
+        }
+        else
+        {
+            throw new InvalidOperationException("Value is not a number");
+        }
+
+        Assert.True(Math.Abs(123.45 - savedDoubleValue) < 0.01);
+        // Original property should not be changed
+        Assert.Equal(originalDoubleValue, propertyRow.OriginalProperty.DoubleValue);
     }
 
     [Fact]

@@ -73,8 +73,8 @@ public static class ServiceLocator
         services.AddTransient<IPropertySaveService, PropertySaveService>();
         services.AddTransient<IPropertyViewModelFactory, PropertyViewModelFactory>();
 
-        // ViewModels (Transient - fresh instance each time)
-        services.AddTransient<MainWindowViewModel>();
+        // ViewModels are created manually in window constructors with runtime parameters
+        // They are not registered in DI container
 
         _serviceProvider = services.BuildServiceProvider();
         return _serviceProvider;

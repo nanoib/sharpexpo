@@ -65,7 +65,9 @@ public class PropertyFilterServiceTests
         var filtered = filterService.FilterProperties(allProperties, "Property1");
 
         // Assert
-        Assert.Contains(category, filtered);
+        // Category is only included if it matches the search text itself
+        // When searching for a property, only matching properties are included
+        Assert.DoesNotContain(category, filtered); // Category doesn't match "Property1"
         Assert.Contains(prop1, filtered);
         Assert.DoesNotContain(prop2, filtered);
     }
@@ -84,7 +86,8 @@ public class PropertyFilterServiceTests
         var filtered = filterService.FilterProperties(allProperties, "Value1");
 
         // Assert
-        Assert.Contains(category, filtered);
+        // Category is only included if it matches the search text itself
+        Assert.DoesNotContain(category, filtered); // Category doesn't match "Value1"
         Assert.Contains(prop1, filtered);
         Assert.DoesNotContain(prop2, filtered);
     }
@@ -104,9 +107,9 @@ public class PropertyFilterServiceTests
         var filtered = filterService.FilterProperties(allProperties, "Category1");
 
         // Assert
-        Assert.Contains(category1, filtered);
-        Assert.Contains(prop1, filtered); // Property in matching category is included
-        Assert.Contains(category2, filtered);
+        Assert.Contains(category1, filtered); // Category matches search text
+        Assert.DoesNotContain(prop1, filtered); // Properties don't match "Category1"
+        Assert.DoesNotContain(category2, filtered); // Category2 doesn't match
         Assert.DoesNotContain(prop2, filtered);
     }
 

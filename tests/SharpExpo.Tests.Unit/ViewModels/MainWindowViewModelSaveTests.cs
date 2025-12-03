@@ -9,12 +9,13 @@ using SharpExpo.Contracts.Models;
 using SharpExpo.Tests.Unit.Helpers;
 using SharpExpo.UI.Commands;
 using SharpExpo.UI.ViewModels;
+using SharpExpo.UI.Windows.BimPropertiesWindow.ViewModels;
 using Xunit;
 
 namespace SharpExpo.Tests.Unit.ViewModels;
 
 /// <summary>
-/// Тесты для функционала сохранения значений свойств в MainWindowViewModel
+/// Тесты для функционала сохранения значений свойств в BimPropertiesWindowViewModel
 /// </summary>
 public class MainWindowViewModelSaveTests : IDisposable
 {
@@ -144,7 +145,7 @@ public class MainWindowViewModelSaveTests : IDisposable
         else
         {
             // Альтернатива: используем reflection для доступа к приватному методу LoadDataAsync
-            var loadMethod = typeof(MainWindowViewModel).GetMethod("LoadDataAsync", 
+            var loadMethod = typeof(BimPropertiesWindowViewModel).GetMethod("LoadDataAsync", 
                 BindingFlags.NonPublic | BindingFlags.Instance);
             
             if (loadMethod != null)
@@ -232,7 +233,7 @@ public class MainWindowViewModelSaveTests : IDisposable
         else
         {
             // Альтернатива: используем reflection для доступа к приватному методу LoadDataAsync
-            var loadMethod = typeof(MainWindowViewModel).GetMethod("LoadDataAsync", 
+            var loadMethod = typeof(BimPropertiesWindowViewModel).GetMethod("LoadDataAsync", 
                 BindingFlags.NonPublic | BindingFlags.Instance);
             
             if (loadMethod != null)
@@ -335,7 +336,7 @@ public class MainWindowViewModelSaveTests : IDisposable
         else
         {
             // Альтернатива: используем reflection для доступа к приватному методу LoadDataAsync
-            var loadMethod = typeof(MainWindowViewModel).GetMethod("LoadDataAsync", 
+            var loadMethod = typeof(BimPropertiesWindowViewModel).GetMethod("LoadDataAsync", 
                 BindingFlags.NonPublic | BindingFlags.Instance);
             
             if (loadMethod != null)

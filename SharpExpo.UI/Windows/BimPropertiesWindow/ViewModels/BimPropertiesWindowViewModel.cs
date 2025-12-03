@@ -5,18 +5,19 @@ using SharpExpo.Contracts;
 using SharpExpo.Contracts.Models;
 using SharpExpo.UI.Commands;
 using SharpExpo.UI.Services;
+using SharpExpo.UI.ViewModels;
 
-namespace SharpExpo.UI.ViewModels;
+namespace SharpExpo.UI.Windows.BimPropertiesWindow.ViewModels;
 
 /// <summary>
-/// View model for the main window of the application.
+/// View model for the BIM properties window.
 /// Manages the display and interaction with BIM family properties.
 /// </summary>
 /// <remarks>
-/// WHY: This class serves as the main view model, coordinating between the data provider, services, and the UI.
+/// WHY: This class serves as the view model for the BIM properties window, coordinating between the data provider, services, and the UI.
 /// It follows the MVVM pattern and delegates specific responsibilities to specialized services to maintain single responsibility.
 /// </remarks>
-public class MainWindowViewModel : ViewModelBase
+public class BimPropertiesWindowViewModel : ViewModelBase
 {
     private readonly IBimFamilyDataProvider _dataProvider;
     private readonly IPropertyFilterService _filterService;
@@ -33,7 +34,7 @@ public class MainWindowViewModel : ViewModelBase
     private string _currentFamilyId = string.Empty;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
+    /// Initializes a new instance of the <see cref="BimPropertiesWindowViewModel"/> class.
     /// </summary>
     /// <param name="dataProvider">The data provider for loading family data.</param>
     /// <param name="filterService">The service for filtering properties.</param>
@@ -44,7 +45,7 @@ public class MainWindowViewModel : ViewModelBase
     /// <param name="familyId">The ID of the family to load.</param>
     /// <param name="familyOptionsFilePath">The path to the family-options.json file.</param>
     /// <param name="familiesDirectory">The directory containing family JSON files. If empty, uses default location.</param>
-    public MainWindowViewModel(
+    public BimPropertiesWindowViewModel(
         IBimFamilyDataProvider dataProvider,
         IPropertyFilterService filterService,
         IPropertySaveService saveService,
@@ -65,10 +66,10 @@ public class MainWindowViewModel : ViewModelBase
         _familyOptionsFilePath = Path.GetFullPath(familyOptionsFilePath ?? throw new ArgumentNullException(nameof(familyOptionsFilePath)));
         _familiesDirectory = string.IsNullOrEmpty(familiesDirectory) ? string.Empty : Path.GetFullPath(familiesDirectory);
 
-        _logger.Log($"MainWindowViewModel инициализирован:");
+        _logger.Log($"BimPropertiesWindowViewModel initialized:");
         _logger.Log($"  FamilyId: {_currentFamilyId}");
-        _logger.Log($"  FamilyOptionsFilePath (абсолютный): {_familyOptionsFilePath}");
-        _logger.Log($"  FamiliesDirectory (абсолютный): {_familiesDirectory}");
+        _logger.Log($"  FamilyOptionsFilePath (absolute): {_familyOptionsFilePath}");
+        _logger.Log($"  FamiliesDirectory (absolute): {_familiesDirectory}");
 
         LoadCommand = new RelayCommand(async () => await LoadDataAsync());
     }
@@ -106,9 +107,9 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Gets the command for loading family data.
+    /// Gets the command to load family data.
     /// </summary>
-    /// <value>The command that triggers data loading.</value>
+    /// <value>The command that triggers loading of family data.</value>
     public ICommand LoadCommand { get; }
 
     /// <summary>
@@ -305,7 +306,7 @@ public class MainWindowViewModel : ViewModelBase
     /// <param name="newValue">The new value to save.</param>
     /// <returns>A task that represents the asynchronous save operation.</returns>
     /// <remarks>
-    /// WHY: This method delegates saving to the PropertySaveService to maintain separation of concerns.
+    /// WHY: This method delegates saving to the PropertySaveService, maintaining separation of concerns.
     /// </remarks>
     public async Task SavePropertyValueAsync(PropertyRowViewModel propertyRow, string newValue)
     {
