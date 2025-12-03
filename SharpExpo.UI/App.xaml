@@ -1,0 +1,14 @@
+﻿<Application x:Class="SharpExpo.UI.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SharpExpo.UI"
+             xmlns:converters="clr-namespace:SharpExpo.UI.Converters"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter"/>
+        <converters:BoolToTriangleConverter x:Key="BoolToTriangleConverter"/>
+    </Application.Resources>
+</Application>

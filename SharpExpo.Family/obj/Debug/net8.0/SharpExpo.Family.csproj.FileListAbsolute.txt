@@ -1,0 +1,16 @@
+C:\repos\sharpexpo\SharpExpo.Family\bin\Debug\net8.0\data.json
+C:\repos\sharpexpo\SharpExpo.Family\bin\Debug\net8.0\SharpExpo.Family.deps.json
+C:\repos\sharpexpo\SharpExpo.Family\bin\Debug\net8.0\SharpExpo.Family.dll
+C:\repos\sharpexpo\SharpExpo.Family\bin\Debug\net8.0\SharpExpo.Family.pdb
+C:\repos\sharpexpo\SharpExpo.Family\bin\Debug\net8.0\SharpExpo.Contracts.dll
+C:\repos\sharpexpo\SharpExpo.Family\bin\Debug\net8.0\SharpExpo.Contracts.pdb
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.csproj.AssemblyReference.cache
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.GeneratedMSBuildEditorConfig.editorconfig
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.AssemblyInfoInputs.cache
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.AssemblyInfo.cs
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.csproj.CoreCompileInputs.cache
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExp.435A1643.Up2Date
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.dll
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\refint\SharpExpo.Family.dll
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\SharpExpo.Family.pdb
+C:\repos\sharpexpo\SharpExpo.Family\obj\Debug\net8.0\ref\SharpExpo.Family.dll
